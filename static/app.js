@@ -11,6 +11,10 @@ const store = {
   set(k, v) { try { localStorage.setItem(k, v); } catch { /* private mode */ } },
 };
 
+// The page can be served by the backend itself (API on the same origin) or as
+// static files from GitHub Pages (API somewhere else, set in config.js).
+const API = (window.SEAM_API || "").replace(/\/$/, "");
+
 const S = {
   key: null, brands: [], cat: null, styles: [], styleId: null, data: null, tab: "pack",
   viewVersion: null, diffA: null, diffB: null, inbox: [], blobs: new Map(), sketchUrl: null, tour: null,
@@ -20,7 +24,7 @@ const S = {
 async function api(path, opts = {}) {
   const headers = { "X-API-Key": S.key, ...(opts.headers || {}) };
   if (opts.json !== undefined) { headers["Content-Type"] = "application/json"; opts.body = JSON.stringify(opts.json); }
-  const res = await fetch(path, { ...opts, headers });
+  const res = await fetch(API + path, { ...opts, headers });
   const isJson = (res.headers.get("content-type") || "").includes("json");
   const data = isJson ? await res.json() : await res.blob();
   if (!res.ok) throw new Error((isJson && (data.error || data.detail)) ? (typeof data.detail === "string" ? data.detail : data.error || JSON.stringify(data.detail)) : res.statusText);
@@ -43,9 +47,24 @@ function toast(msg) {
 }
 
 // ---------- boot ----------
+// A free server may be asleep. Keep trying for up to 90 seconds and say so.
+async function wake(fn) {
+  const end = Date.now() + 90000;
+  let shown = false;
+  for (;;) {
+    try { const r = await fn(); if (shown) toast("Server is awake."); return r; }
+    catch (e) {
+      if (Date.now() > end) throw e;
+      if (!shown) { toast("Waking the server. This can take up to a minute on the free plan."); shown = true; }
+      await sleep(3000);
+    }
+  }
+}
+
 async function boot() {
-  S.brands = await (await fetch("/api/demo-brands")).json();
-  S.cat = await (await fetch("/api/catalogue")).json();
+  $("#apiLink").href = API + "/docs";
+  S.brands = await wake(() => fetch(API + "/api/demo-brands").then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); }));
+  S.cat = await (await fetch(API + "/api/catalogue")).json();
   S.key = store.get("seam.key") || S.brands[0].key;
   if (!S.brands.some((b) => b.key === S.key)) S.key = S.brands[0].key;
   const sel = $("#brandSel");
@@ -121,7 +140,7 @@ async function loadStyle() {
   if (!S.styleId) return;
   S.data = await api(`/api/styles/${S.styleId}`);
   const keys = S.data.requests.map((r) => "key=" + encodeURIComponent(r.idempotency_key)).join("&");
-  S.inbox = keys ? await (await fetch("/sim/suppliers/inbox?" + keys)).json() : [];
+  S.inbox = keys ? await (await fetch(API + "/sim/suppliers/inbox?" + keys)).json() : [];
   if (S.tab === "time") S.timeline = await api(`/api/styles/${S.styleId}/timeline`);
   renderDetail();
 }
@@ -380,7 +399,7 @@ const SAMPLES = [
 let pickedSample = null;
 
 function buildNewDialog() {
-  $("#samples").innerHTML = SAMPLES.map((s, i) => `<button type="button" data-i="${i}" aria-pressed="false"><img src="/static/samples/${s.file}.svg" alt=""><span>${esc(s.name)}</span></button>`).join("");
+  $("#samples").innerHTML = SAMPLES.map((s, i) => `<button type="button" data-i="${i}" aria-pressed="false"><img src="static/samples/${s.file}.svg" alt=""><span>${esc(s.name)}</span></button>`).join("");
   $("#samples").querySelectorAll("button").forEach((b) => (b.onclick = () => pickSample(+b.dataset.i)));
   $("#garmentSel").innerHTML = S.cat.garments.map((g) => `<option value="${g.code}">${esc(g.label)}</option>`).join("");
   $("#fabricSel").innerHTML = S.cat.fabrics.map((f) => `<option value="${f.code}">${esc(f.label)} · ${eur(f.price_per_m_cents)}/m</option>`).join("");
@@ -422,7 +441,7 @@ async function createFromForm() {
   const fd = new FormData();
   let file = f.sketch.files[0];
   if (!file && pickedSample) {
-    const blob = await (await fetch(`/static/samples/${pickedSample.file}.svg`)).blob();
+    const blob = await (await fetch(`static/samples/${pickedSample.file}.svg`)).blob();
     file = new File([blob], `${pickedSample.file}.svg`, { type: "image/svg+xml" });
   }
   if (!file) throw new Error("Pick a sample or upload a sketch.");
