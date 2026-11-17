@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0b0b0b">
+<title>SEAM | Sketch to supplier quote</title>
+<meta name="description" content="One record per garment, from the designer's sketch to the factory's quote.">
+<link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+<header class="top">
+  <a class="logo" href="/" id="homeLink">SEAM</a>
+  <div class="top-right">
+    <div class="glass">
+      <label for="brandSel" class="sr">Brand</label>
+      <select id="brandSel"></select>
+    </div>
+    <div class="budget" id="budget" title="Image budget this month"></div>
+    <span class="clock" id="clock">BARCELONA</span>
+  </div>
+</header>
+
+<div class="narration" id="narration" hidden>
+  <span class="step-no" id="narrStep"></span>
+  <span class="narr-text" id="narrText"></span>
+  <button class="link-btn" id="narrStop">Stop ↗</button>
+</div>
+
+<main>
+  <section class="hero" id="welcome">
+    <div class="hero-copy">
+      <div class="label">Seam · Sketch to supplier</div>
+      <h1>Sketch.<br>Quote.<br>One record.</h1>
+      <p>A designer drops in a sketch. Seam drafts the tech pack, keeps every version, hands the approved one to factories and makes the campaign images.</p>
+      <div class="meta-row"><span>Barcelona</span><span>Multi-brand</span><span>2026</span></div>
+      <div class="hero-actions">
+        <button class="link-btn strong" id="tourBtn">Play the 2-minute tour ↗</button>
+        <button class="link-btn" id="newBtn">New style ↗</button>
+      </div>
+    </div>
+    <div class="hero-cards">
+      <figure class="card tall"><img src="/static/hero/dress.svg" alt="Preview render of a midi dress on a model"><figcaption>Tech pack</figcaption></figure>
+      <figure class="card"><img src="/static/hero/shirt.svg" alt="Preview render of a shirt, flat lay"><figcaption>Factories</figcaption></figure>
+      <figure class="card"><img src="/static/hero/trousers.svg" alt="Preview render of trousers, flat lay"><figcaption>Images</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="workspace" id="workspace">
+    <aside class="side">
+      <div class="side-head">
+        <div class="label">Styles</div>
+        <button class="link-btn" id="newBtn2">New ↗</button>
+      </div>
+      <ul id="styleList" class="style-list"></ul>
+      <p class="hint" id="emptyHint">No styles yet. Play the tour, or add a sketch.</p>
+    </aside>
+    <div class="main" id="main">
+      <div class="empty-main" id="emptyMain">
+        <div class="label">00 · Start</div>
+        <h2 class="huge">Pick a style.</h2>
+        <p class="hint">Or play the tour. It walks one garment from sketch to factory quote in about two minutes.</p>
+      </div>
+      <div id="detail" hidden></div>
+    </div>
+  </section>
+
+  <section class="chapters">
+    <article class="chapter">
+      <div class="num">01</div>
+      <div class="label">The wall</div>
+      <h2 class="huge">Brands.</h2>
+      <div class="chapter-foot"><p>Every brand's data is walled off inside the database, not just in the code. A missing filter can't leak anything.</p></div>
+    </article>
+    <article class="chapter">
+      <div class="num">02</div>
+      <div class="label">The queue</div>
+      <h2 class="huge">Crashes.</h2>
+      <div class="chapter-foot"><p>Work sits in Postgres with a lease. If a worker dies mid-job, another one picks it up. Nothing is lost.</p></div>
+    </article>
+    <article class="chapter">
+      <div class="num">03</div>
+      <div class="label">The handoff</div>
+      <h2 class="huge">Factories.</h2>
+      <div class="chapter-foot"><p>Every order carries an idempotency key. Retries never become a second order, even when a reply gets lost.</p></div>
+    </article>
+    <article class="chapter">
+      <div class="num">04</div>
+      <div class="label">The budget</div>
+      <h2 class="huge">Images.</h2>
+      <div class="chapter-foot"><p>Same garment look, same picture. Paid for once, with a hard monthly limit per brand.</p></div>
+    </article>
+  </section>
+</main>
+
+<footer class="closing">
+  <div class="label">Seam · Sketch to supplier</div>
+  <h2 class="giant">Sketch to quote.<br>One record.</h2>
+  <div class="closing-links">
+    <a href="/docs" target="_blank" rel="noopener">API ↗</a>
+    <a href="https://github.com/barnascript/seam" target="_blank" rel="noopener">Code ↗</a>
+    <a href="#" id="tourLink">Tour ↗</a>
+  </div>
+  <div class="closing-meta"><span>Built 2026 · Lagos</span><span>© Barnabas Olugbogi</span></div>
+</footer>
+
+<dialog id="newDlg">
+  <form id="newForm" method="dialog">
+    <div class="label">New style</div>
+    <h2 class="dlg-title">Drop a sketch.</h2>
+    <div class="samples" id="samples"></div>
+    <label class="file">Or upload a sketch. PNG, JPEG or SVG, up to 2 MB.
+      <input type="file" name="sketch" accept="image/png,image/jpeg,image/webp,image/svg+xml">
+    </label>
+    <div class="grid2">
+      <label>Style code <input name="code" required maxlength="40" placeholder="SS27-TEE-01"></label>
+      <label>Name <input name="name" required maxlength="120" placeholder="Boxy pocket tee"></label>
+      <label>Garment <select name="garment" id="garmentSel"></select></label>
+      <label>Season <input name="season" maxlength="20" placeholder="SS27"></label>
+      <label class="span2">Fabric <select name="fabric" id="fabricSel"></select></label>
+    </div>
+    <fieldset id="featureBox"><legend>Details on the sketch</legend></fieldset>
+    <p class="form-err" id="newErr"></p>
+    <div class="dlg-actions">
+      <button type="button" class="link-btn" id="newCancel">Cancel</button>
+      <button type="submit" class="link-btn strong">Draft the tech pack ↗</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="editDlg">
+  <form id="editForm" method="dialog">
+    <div class="label">Edit</div>
+    <h2 class="dlg-title">New version.</h2>
+    <p class="hint">Nothing is overwritten. Your change becomes a new draft that someone approves.</p>
+    <label>Fabric <select name="fabric" id="editFabric"></select></label>
+    <fieldset id="editFeatures"><legend>Details</legend></fieldset>
+    <fieldset id="editMeasures" class="measures"><legend>Size M measurements in cm. Other sizes follow the grade rules.</legend></fieldset>
+    <label>Note to the factory <input name="designer_note" maxlength="500" placeholder="Bar-tack the pocket corners."></label>
+    <p class="form-err" id="editErr"></p>
+    <div class="dlg-actions">
+      <button type="button" class="link-btn" id="editCancel">Cancel</button>
+      <button type="submit" class="link-btn strong">Save new draft ↗</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

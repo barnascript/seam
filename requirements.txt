@@ -1,0 +1,7 @@
+fastapi==0.163.1
+uvicorn[standard]==0.54.0
+psycopg[binary]==3.3.9
+psycopg-pool==3.3.3
+httpx==0.28.1
+python-multipart==0.0.34
+anthropic==2.9.0

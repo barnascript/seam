@@ -1,0 +1,35 @@
+name: ci
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: admin
+          POSTGRES_DB: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U admin" --health-interval 2s --health-timeout 5s --health-retries 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Make a normal (non-superuser) database role, like production
+        env:
+          PGPASSWORD: admin
+        run: |
+          psql -h localhost -U admin -d postgres -c "create role seam_owner login password 'seam' nosuperuser nobypassrls"
+          psql -h localhost -U admin -d postgres -c "create database seamtest owner seam_owner"
+      - run: pip install -r requirements-dev.txt
+      - name: Tests
+        env:
+          DATABASE_URL: postgresql://seam_owner:seam@localhost:5432/seamtest
+        run: pytest -q
