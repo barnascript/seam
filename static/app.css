@@ -284,3 +284,7 @@ fieldset input[type="checkbox"] { width: 14px; height: 14px; accent-color: #f4f4
 .tabs { scroll-margin-top: 60px; }
 .tabs { scrollbar-width: none; }
 .tabs::-webkit-scrollbar { display: none; }
+
+/* A working app needs a solid header: text scrolling under it was hard to read. */
+.top { background: var(--bg); border-bottom: 1px solid transparent; }
+.top.on-paper { background: var(--paper); }

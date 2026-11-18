@@ -295,16 +295,17 @@ function renderSuppliers(el) {
       <button class="link-btn strong" id="sendBtn" ${!ap || sentForAp ? "disabled" : ""}>${sentForAp ? `Version ${ap.version} already sent` : `Send version ${ap ? ap.version : ""} to all factories ↗`}</button>
     </div>
     ${reqs.length ? `<div class="tbl-wrap"><table>
-      <thead><tr><th>Factory</th><th>Version</th><th>Status</th><th class="num">Tries</th><th class="num">Unit price</th><th class="num">Lead time</th><th class="num">MOQ</th><th>Still valid?</th></tr></thead>
+      <thead><tr><th>Factory</th><th>Version</th><th>Status</th><th>Still valid?</th><th class="num">Unit price</th><th class="num">Lead time</th><th class="num">MOQ</th><th class="num">Tries</th></tr></thead>
       <tbody>${reqs.map((r) => `<tr>
         <td><b>${esc(r.supplier_name)}</b><br><span class="hint">${esc(r.country)}</span></td>
         <td>v${r.version}</td>
         <td>${st(r.status)}${r.status === "pending" && r.last_error ? `<br><span class="hint">${esc(r.last_error.split(":")[0])}, retrying.</span>` : ""}</td>
-        <td class="num">${r.attempts}</td>
+        <td>${r.status !== "quoted" ? "" : r.stale ? `${st("stale", "Out of date")}<br><span class="hint">${esc(r.stale_reason)} changed.</span>` : st("fresh", "Valid")}</td>
         <td class="num">${r.quote ? eur(r.quote.unit_price_cents) : "–"}</td>
         <td class="num">${r.quote ? r.quote.lead_time_days + " days" : "–"}</td>
         <td class="num">${r.quote ? r.quote.moq : "–"}</td>
-        <td>${r.status !== "quoted" ? "" : r.stale ? `${st("stale", "Out of date")}<br><span class="hint">${esc(r.stale_reason)} changed.</span>` : st("fresh", "Valid")}</td>
+      
+        <td class="num">${r.attempts}</td>
       </tr>`).join("")}</tbody></table></div>
     <h3 class="sec-title">Factory side.<small>Test systems</small></h3>
     <p class="hint">Deliveries count every time our request reached the factory. Orders count what the factory actually holds. Retries never become a second order.</p>
