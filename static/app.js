@@ -11,9 +11,8 @@ const store = {
   set(k, v) { try { localStorage.setItem(k, v); } catch { /* private mode */ } },
 };
 
-// The page can be served by the backend itself (API on the same origin) or as
-// static files from GitHub Pages (API somewhere else, set in config.js).
-const API = (window.SEAM_API || "").replace(/\/$/, "");
+// The backend serves this page, so the API is on the same origin.
+const API = "";
 
 const S = {
   key: null, brands: [], cat: null, styles: [], styleId: null, data: null, tab: "pack",

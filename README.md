@@ -4,7 +4,7 @@ Sketch to supplier quote, on one record.
 
 A designer drops in a garment sketch. Seam drafts the tech pack, keeps every version, sends the approved one to factories, collects their quotes and makes campaign images. Every step writes to the same record, so nothing gets lost between tools and nothing happens twice.
 
-**Live demo:** _link coming_ · press **Play the 2-minute tour** and watch one garment go from sketch to three factory quotes.
+**Live demo:** https://seam-led1.onrender.com (free plan, so the first visit after a quiet spell takes about a minute to wake up) · press **Play the 2-minute tour** and watch one garment go from sketch to three factory quotes.
 
 ![Seam](docs/screenshot.jpg)
 

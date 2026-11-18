@@ -13,5 +13,6 @@ IMAGE_COST_CENTS = int(os.environ.get("IMAGE_COST_CENTS", "4"))
 DEMO_IMAGE_BUDGET_CENTS = int(os.environ.get("DEMO_IMAGE_BUDGET_CENTS", "200"))
 MAX_SKETCH_BYTES = 2_000_000
 ALLOW_RLS_BYPASS = os.environ.get("SEAM_ALLOW_RLS_BYPASS") == "1"
-# The static site on GitHub Pages calls the API from another origin.
-CORS_ORIGINS = [o for o in os.environ.get("CORS_ORIGINS", "https://barnascript.github.io").split(",") if o]
+# Origins allowed to call the API from a browser on another site. None by default:
+# the backend serves its own page.
+CORS_ORIGINS = [o for o in os.environ.get("CORS_ORIGINS", "").split(",") if o]
